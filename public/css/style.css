@@ -1,0 +1,9 @@
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { width:100%; height:100%; background:#05060d; overflow:hidden; font-family:"Microsoft YaHei","PingFang SC",sans-serif; user-select:none; }
+body { animation: fadeIn 0.5s ease-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+#stage { position:absolute; left:50%; top:50%; transform-origin:center center; box-shadow:0 0 60px rgba(120,80,255,.12), 0 0 120px rgba(0,180,255,.08); background:#070912; }
+canvas { display:block; }
+#scan { position:absolute; inset:0; pointer-events:none; z-index:5;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0 1px, transparent 1px 3px);
+  mix-blend-mode: overlay; }
