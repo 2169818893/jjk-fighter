@@ -1,0 +1,26 @@
+{
+  "name": "jjk-net-server",
+  "version": "1.0.0",
+  "description": "咒术激斗 · 联机中转服务器（帧锁同步）",
+  "main": "net-server.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "node net-server.mjs",
+    "test": "node --test",
+    "check": "node --check net-server.mjs"
+  },
+  "keywords": [
+    "websocket",
+    "lockstep",
+    "fighting-game"
+  ],
+  "author": "",
+  "license": "ISC",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.21.1"
+  }
+}
