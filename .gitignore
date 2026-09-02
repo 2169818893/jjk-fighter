@@ -1,0 +1,30 @@
+# ---- Node / npm ----
+node_modules/
+npm-debug.log*
+package-lock.bak
+
+# ---- Rust / Tauri ----
+src-tauri/target/
+src-tauri/gen/schemas/
+
+# ---- 音频资源 ----
+# 版权曲目不入库，放入后会被忽略（详见 public/audio/README.md）
+public/audio/*.ogg
+
+# ---- 日志与临时文件 ----
+*.log
+tmp/
+temp/
+outputs/
+
+# ---- 操作系统 ----
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ---- 编辑器 / IDE ----
+.vscode/
+.idea/
+*.swp
+*.swo

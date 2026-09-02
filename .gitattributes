@@ -1,0 +1,20 @@
+# 自动处理文本文件换行符：仓库内统一 LF，检出时按平台
+* text=auto
+
+# Windows 批处理必须 CRLF
+*.bat text eol=crlf
+
+# 二进制文件不做任何转换
+*.png binary
+*.ico binary
+*.ogg binary
+
+# 源码统一 LF
+*.js text eol=lf
+*.mjs text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.rs text eol=lf
+*.toml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
