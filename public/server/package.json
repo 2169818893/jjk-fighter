@@ -14,8 +14,8 @@
     "lockstep",
     "fighting-game"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "FengXin",
+  "license": "MIT",
   "private": true,
   "engines": {
     "node": ">=18"
