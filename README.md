@@ -2,17 +2,19 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)](https://tauri.app)
-[![Node](https://img.shields.io/badge/Node-%3E%3D18-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Node](https://img.shields.io/badge/Node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 
 基于《咒术回战》的同人 2D 格斗游戏。**纯 Canvas + Web Audio 实现，前端零框架零构建**；附带 Tauri 2 桌面壳（Rust）与帧锁同步联机服务器（Node.js）。
 
 > [!IMPORTANT]
 > 本项目为非商业同人作品（fan game），与集英社、MAPPA 及原作版权方无关。游戏本体不含任何版权音频，请阅读[音频资源说明](public/audio/README.md)。仅供学习交流，请支持正版。
+>
+> **本仓库的 MIT 许可证仅覆盖源代码，不授予《咒术回战》任何角色/名称/设定的使用许可**；如认为内容侵权请联系仓库作者下架处理（见 [LICENSE](LICENSE) 开头的 SCOPE NOTICE）。
 
 ## ✨ 特性
 
-- **28 名可选角色** —— 五条悟、虎杖悠仁、伏黑惠、两面包由、宿傩、乙骨忧太、七海建人、羂索等，含觉醒/受肉形态
-- **4 种游戏模式** —— 双人同屏对战 / 街机闯关（连战十人）/ AI 对决 / 局域网联机 1v1
+- **21 名可选角色** —— 五条悟、虎杖悠仁、伏黑惠、两面宿傩、乙骨忧太、七海建人、羂索等，含觉醒/受肉形态
+- **5 种游戏模式** —— 玩家 vs AI / 双人同屏对战 / 街机闯关（连战十人）/ AI 互相对战 / 局域网联机 1v1
 - **帧锁同步（Lockstep）联机** —— 输入帧转发 + 同步校验 + RTT 采样平滑，服务端带 schema 校验、限速、连接配额、房号状态机等加固
 - **原作机制还原** —— 黑闪（暴击 2.5 次方威力 + 回血）、领域展开、必杀技顿帧、BO3 赛制
 - **可重绑按键** —— 双人键位均可在设置界面自定义
@@ -75,7 +77,19 @@ npm start          # 默认监听 0.0.0.0:8736
 - 手动指定服务器：页面地址追加参数 `?server=ws://192.168.x.x:8736`
 - 公网 / HTTPS：浏览器禁止 HTTPS 页面连接明文 `ws://`，需经反向代理或隧道提供 `wss://`（如 `?server=wss://xxx.trycloudflare.com`）
 
-服务器环境变量：`PORT`（端口，`0` 为随机）、`HOST`（监听地址）、`MAX_CONNS`（最大连接数，默认 64）。
+服务器环境变量：
+
+| 变量 | 默认 | 说明 |
+| ---- | ---- | ---- |
+| `PORT` | `8736` | 监听端口，`0` 为随机 |
+| `HOST` | 空（所有网卡） | 监听地址；只本机使用可设 `127.0.0.1` |
+| `MAX_CONNS` | `64` | 最大同时连接数 |
+| `ALLOWED_ORIGINS` | 空 | 允许的网页来源（逗号分隔），如 `https://your.page,http://192.168.1.10:8000`；**未配置时不校验 Origin** |
+| `ALLOW_ORIGIN_EMPTY` | `0` | 设为 `1` 放行无 Origin 的非浏览器客户端（自研机器人/压测用） |
+| `LOG_LEVEL` | `info` | 日志级别：`debug` / `info` / `warn` / `error` |
+
+> [!WARNING]
+> **公网部署安全提示**：默认配置不校验 Origin 且监听所有网卡（启动时会有告警），公网暴露等于开放无鉴权消息中继。公网部署请务必：① 设置 `ALLOWED_ORIGINS` 为你的页面地址；② 用反向代理提供 `wss://`；③ 依托 `MAX_CONNS` 限流并自行加访问鉴权（如反代层 Basic Auth）。
 
 ### 桌面版（Tauri 2）
 

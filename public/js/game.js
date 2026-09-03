@@ -73,7 +73,10 @@ export const Game = {
             this.matchSeed = Number.isFinite(urlSeed) ? (urlSeed >>> 0) : (Date.now() >>> 0);
         }
         RNG.seed(this.matchSeed);
-        console.log('[RNG] 本场逻辑种子:', this.matchSeed);
+        /* P2-7：种子信息只在 ?debug 下输出（原为无条件 console.log，会向普通玩家泄露可预测信息） */
+        if (new URLSearchParams(location.search).has('debug')) {
+            console.debug('[RNG] 本场逻辑种子:', this.matchSeed);
+        }
         const ai1 = this.mode === 'aivsai';
         const ai2 = this.mode === 'pvai' || this.mode === 'arcade' || this.mode === 'aivsai';
         this.fighters = [new Fighter(p1id, 0, ai1), new Fighter(p2id, 1, ai2)];
@@ -955,6 +958,8 @@ export const Game = {
                 }
             }
         }
+        /* P2-9：设置界面的任何变更（难度/回合制/键位等）确认后即时落盘 */
+        persistSettings();
     },
 
     keyMapForSide(side) {
