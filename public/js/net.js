@@ -199,7 +199,7 @@ export const Net = {
     requestRematch() {
         if (this.rematchLocal || this.status !== 'playing') return;
         this.rematchLocal = true;
-        this.send({ t: 'rematch', rtt: this.rtt || 0 });
+        this.send({ t: 'rematch' });
     },
     /* ---- 主动中止：失步/协议异常时通知服务器广播双方 ---- */
     abort(reason) {
