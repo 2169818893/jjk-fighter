@@ -1,11 +1,11 @@
 /* =====================================================================
    入口文件：初始化 Canvas、输入、响应式缩放并启动主循环
    ===================================================================== */
-import { fit } from './utils.js';
+import { fit, setSceneProvider } from './utils.js';
+import { MENU_SCENES } from './config.js';
 import { Input } from './input.js';
 import { Net } from './net.js';
-// 入口版本号：确保游戏加载最新的角色与战斗模块
-import { Game } from './game.js?v=ai-duel-20260810';
+import { Game } from './game.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -18,6 +18,8 @@ Input.init();
 
 // 暴露到全局，供 utils / fighter-core / audio 等模块在运行时使用
 window.Game = Game;
+/* P2-4：向 utils 注入场景读取器，tickGameIntervals 不再依赖裸全局 Game */
+setSceneProvider(() => Game.scene);
 
 let lastT = 0, acc = 0;
 // 逻辑步进（与渲染解耦：由 rAF 或定时器驱动）
@@ -38,8 +40,8 @@ function stepLogic(now){
       break;
     }
     acc -= 16.66;
-    /* P2-10：原列表里的 'difficulty' 全代码无任何处赋值，是死场景，已移除 */
-    if(['title','netLobby','help','select','stageSelect','result','settings','arcadeTransition','arcadeResult'].includes(Game.scene)) Game.handleMenus();
+    /* P2-5：菜单场景名单收敛到 config.js 的 MENU_SCENES，与 game.js 单一真相 */
+    if (MENU_SCENES.includes(Game.scene)) Game.handleMenus();
     Game.update();
     Input.postUpdate();
   }

@@ -6,6 +6,8 @@
          P2-7 Origin 拒绝 / P2-14 开局后 pick·sel 门禁 / 连接配额
          P2-8 补测：二进制帧拒绝、房号格式非法、协议版本字段、
                心跳淘汰、连接即 RTT 探测、abort 后 rematch 失效
+         P2-12 角色表指纹：一致开局 / 不一致拒绝开局 / 旧客户端兼容
+         P2-13 优雅关闭：shutdown 广播 aborted
    运行：node --test test/protocol.test.mjs
    ===================================================================== */
 import { test, before, after } from 'node:test';
@@ -413,7 +415,6 @@ test('连接配额：达到上限即拒绝，不再多放行一个', async () =>
 });
 
 /* ===================== P2-8 补齐的边界用例 ===================== */
-
 test('二进制帧被拒绝（不影响后续正常通信）', async () => {
     const ws = await openClient();
     ws.send(Buffer.from([1, 2, 3, 4]));           // 二进制帧
@@ -519,4 +520,75 @@ test('abort 之后 rematch / in 全部失效（房间已解散）', async () => 
     a.close();
     b.close();
     await sleep(30);
+});
+
+/* ===================== P2-12 角色表指纹 / P2-13 优雅关闭 ===================== */
+
+test('P2-12 角色表指纹：两端一致（含仅一方携带）正常开局', async () => {
+    const [a, b] = await pairUp();
+    const sa = waitMsg(a, m => m.t === 'start');
+    const sb = waitMsg(b, m => m.t === 'start');
+    send(a, { t: 'pick', c: 0, wins: 2, roundTime: 99, rh: 123456789 });
+    send(b, { t: 'pick', c: 1, wins: 2, roundTime: 99, rh: 123456789 });
+    const [ma, mb] = await Promise.all([sa, sb]);
+    assert.equal(ma.p1, 0);
+    assert.equal(mb.p2, 1);
+    a.close();
+    b.close();
+    await sleep(30);
+});
+
+test('P2-12 角色表指纹：两端不一致不开局，双方收到明确中止原因', async () => {
+    const [a, b] = await pairUp();
+    const ea = waitMsg(a, m => m.t === 'aborted');
+    const eb = waitMsg(b, m => m.t === 'aborted');
+    send(a, { t: 'pick', c: 0, wins: 2, roundTime: 99, rh: 111 });
+    send(b, { t: 'pick', c: 1, wins: 2, roundTime: 99, rh: 222 });
+    const [ma, mb] = await Promise.all([ea, eb]);
+    assert.ok(String(ma.reason).includes('角色表'), `中止原因应说明角色表问题，实际：${ma.reason}`);
+    assert.equal(mb.reason, ma.reason);
+    a.close();
+    b.close();
+    await sleep(30);
+});
+
+test('P2-12 角色表指纹：旧客户端（不带 rh）不受影响', async () => {
+    const [a, b] = await pairUp();
+    const sa = waitMsg(a, m => m.t === 'start');
+    const sb = waitMsg(b, m => m.t === 'start');
+    send(a, { t: 'pick', c: 2, wins: 2, roundTime: 99 });            // 无 rh
+    send(b, { t: 'pick', c: 3, wins: 2, roundTime: 99, rh: 999 });   // 有 rh
+    await Promise.all([sa, sb]);
+    a.close();
+    b.close();
+    await sleep(30);
+});
+
+test('P2-13 优雅关闭：shutdown 广播 aborted 并关闭全部连接', async () => {
+    const s = createNetServer({ port: 0, host: '127.0.0.1' });
+    await new Promise(res => s.wss.on('listening', res));
+    const url = `ws://127.0.0.1:${s.wss.address().port}`;
+    const open = () => new Promise((res, rej) => { const w = new WebSocket(url); w.on('open', () => res(w)); w.on('error', rej); });
+
+    const a = await open();
+    const b = await open();
+    send(a, { t: 'quick' });
+    const pa = waitMsg(a, m => m.t === 'paired');
+    const pb = waitMsg(b, m => m.t === 'paired');
+    send(b, { t: 'quick' });
+    await Promise.all([pa, pb]);
+    const sa = waitMsg(a, m => m.t === 'start');
+    const sb = waitMsg(b, m => m.t === 'start');
+    send(a, { t: 'pick', c: 0, wins: 2, roundTime: 99 });
+    send(b, { t: 'pick', c: 1, wins: 2, roundTime: 99 });
+    await Promise.all([sa, sb]);
+
+    const ea = waitMsg(a, m => m.t === 'aborted');
+    const eb = waitMsg(b, m => m.t === 'aborted');
+    await s.shutdown('服务器维护');
+    const [ma, mb] = await Promise.all([ea, eb]);
+    assert.equal(ma.reason, '服务器维护');
+    assert.equal(mb.reason, '服务器维护');
+    a.close();
+    b.close();
 });

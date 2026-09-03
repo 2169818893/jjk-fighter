@@ -1,7 +1,7 @@
 /* =====================================================================
    输入系统：键盘事件、按键缓冲、键位重绑
    ===================================================================== */
-import { Settings, KEYMAP } from './config.js';
+import { Settings, KEYMAP, persistSettings } from './config.js';
 import { AudioSys } from './audio.js';
 import { Net } from './net.js';
 
@@ -50,6 +50,7 @@ export const Input = {
         KEYMAP[rb.side][rb.action]=[e.code];
         Settings.rebind=null;
         AudioSys.play('confirm');
+        persistSettings();   // P2-9：重绑结果落盘
         return;
       }
       // 联机帧锁期间：真实键盘不直接写入输入状态（由 net.js 按帧注入双方输入），
@@ -58,7 +59,6 @@ export const Input = {
       if(!this.down[e.code]){ this.press[e.code]=true; this.buf[e.code]=true; this.bufT[e.code]=10; }
       this.down[e.code]=true;
       AudioSys.init();
-      if(window.onAnyKey) window.onAnyKey(e.code);
     });
     addEventListener('keyup', e=>{ this.down[e.code]=false; });
     addEventListener('pointerdown', ()=>{ AudioSys.init(); });

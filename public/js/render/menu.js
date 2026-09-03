@@ -1,7 +1,7 @@
 /* =====================================================================
    菜单与 UI 场景渲染：标题、选人、设置、暂停、结算、操作说明
    ===================================================================== */
-import { VW, VH, GROUND, ROSTER, CHARS, STAGES, Settings, SET_C, ACTION_ORDER, ACTION_LABELS, ACTION_MISSING_ON, ARCADE_STAGES, KEYMAP, THEME } from '../config.js';
+import { VW, VH, ROSTER, CHARS, STAGES, Settings, SET_C, ACTION_ORDER, ACTION_LABELS, ACTION_MISSING_ON, KEYMAP, THEME } from '../config.js';
 import { roundRect, lerp, easeOut, easeOutBack } from '../utils.js';
 import { Net } from '../net.js';
 import { BGM } from '../audio.js';
@@ -34,13 +34,13 @@ function lerpColor(c1,c2,t){
 /* ---- 统一标题装饰线（两侧渐隐线 + 中央菱形） ---- */
 function drawTitleDecor(ctx, cx, y, halfW){
   // 左侧渐隐线
-  var lg=ctx.createLinearGradient(cx-halfW,0,cx-12,0);
+  const lg=ctx.createLinearGradient(cx-halfW,0,cx-12,0);
   lg.addColorStop(0,'rgba(185,168,255,0)');
   lg.addColorStop(1,THEME.primary.glow+'0.5)');
   ctx.strokeStyle=lg; ctx.lineWidth=1.5;
   ctx.beginPath(); ctx.moveTo(cx-halfW,y); ctx.lineTo(cx-12,y); ctx.stroke();
   // 右侧渐隐线
-  var rg=ctx.createLinearGradient(cx+12,0,cx+halfW,0);
+  const rg=ctx.createLinearGradient(cx+12,0,cx+halfW,0);
   rg.addColorStop(0,THEME.primary.glow+'0.5)');
   rg.addColorStop(1,'rgba(185,168,255,0)');
   ctx.strokeStyle=rg; ctx.lineWidth=1.5;
@@ -145,7 +145,7 @@ export const MenuRenderer = {
       ctx.beginPath(); ctx.moveTo(vx,vy); ctx.lineTo(nvx,nvy); ctx.stroke();
     }
     // 四角饰线（紫线+内平行线+金点，呼吸脉动透明度）
-    ctx.lineWidth=2; 
+    ctx.lineWidth=2;
     const cl=34;
     const cornerAlpha=0.30+Math.sin(t*0.05)*0.08;
     [[24,24,1,1],[VW-24,24,-1,1],[24,VH-24,1,-1],[VW-24,VH-24,-1,-1]].forEach(([cx,cy,dx,dy])=>{
@@ -1164,7 +1164,7 @@ export const MenuRenderer = {
         ctx.restore();
         ctx.fillStyle=THEME.text.white;
         // 菱形指示器
-        var dFloat=Math.sin(t*0.09)*4;
+        const dFloat=Math.sin(t*0.09)*4;
         ctx.fillStyle=THEME.accent.gold;
         ctx.save(); ctx.translate(VW/2-210-dFloat,y-8); ctx.rotate(Math.sin(t*0.08)*0.15);
         ctx.beginPath(); ctx.moveTo(0,-7); ctx.lineTo(7,0); ctx.lineTo(0,7); ctx.lineTo(-7,0); ctx.closePath(); ctx.fill();
@@ -1383,10 +1383,10 @@ export const MenuRenderer = {
         ctx.strokeStyle=THEME.accent.gold; ctx.lineWidth=1.5;
         roundRect(ctx,VW/2-190,y-32,380,46,THEME.radius.card); ctx.stroke();
         // 扫光动画
-        var sweepPos=((t*3)%500)-60;
+        const sweepPos=((t*3)%500)-60;
         ctx.save();
         ctx.beginPath(); roundRect(ctx,VW/2-190,y-32,380,46,THEME.radius.card); ctx.clip();
-        var sg=ctx.createLinearGradient(sweepPos-60,0,sweepPos+60,0);
+        const sg=ctx.createLinearGradient(sweepPos-60,0,sweepPos+60,0);
         sg.addColorStop(0,'rgba(255,255,255,0)');
         sg.addColorStop(0.5,'rgba(255,255,255,0.08)');
         sg.addColorStop(1,'rgba(255,255,255,0)');
@@ -1395,7 +1395,7 @@ export const MenuRenderer = {
         ctx.restore();
         ctx.fillStyle=THEME.text.white;
         // 菱形指示器
-        var dFloat=Math.sin(t*0.09)*4;
+        const dFloat=Math.sin(t*0.09)*4;
         ctx.fillStyle=THEME.accent.gold;
         ctx.save(); ctx.translate(VW/2-210-dFloat,y-8); ctx.rotate(Math.sin(t*0.08)*0.15);
         ctx.beginPath(); ctx.moveTo(0,-7); ctx.lineTo(7,0); ctx.lineTo(0,7); ctx.lineTo(-7,0); ctx.closePath(); ctx.fill();
@@ -1549,7 +1549,7 @@ export const MenuRenderer = {
   },
 
   /* ---- 联机选人状态横幅（叠加在选人界面上） ---- */
-  drawNetSelectStatus(game, ctx, t){
+  drawNetSelectStatus(game, ctx, _t){
     ctx.save();
     ctx.textAlign='center';
     ctx.fillStyle='rgba(0,0,0,0.55)';

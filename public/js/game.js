@@ -4,7 +4,6 @@
 import {
     VW,
     VH,
-    GROUND,
     ROUND_TIME,
     ARCADE_STAGES,
     ROSTER,
@@ -19,14 +18,15 @@ import {
 } from './config.js';
 import { BG } from './render/background.js';
 import { Fighter } from './entities/fighter-core.js';
-import './entities/fighter-combat.js?v=ai-duel-20260810'; // 扩展 Fighter 技能/必杀副作用
+import './entities/fighter-combat.js'; // 扩展 Fighter 技能/必杀副作用
 import { Input } from './input.js';
 import { Net } from './net.js';
 import { RNG, tickGameIntervals, clearAllGameIntervals } from './utils.js';
 import { AudioSys, BGM } from './audio.js';
 import { FX } from './fx.js';
-import { MenuRenderer } from './render/menu.js?v=ai-duel-20260810';
+import { MenuRenderer } from './render/menu.js';
 import { FightRenderer } from './render/fight.js';
+import { persistSettings } from './config.js';
 
 export const Game = {
     scene: 'title',
@@ -131,8 +131,8 @@ export const Game = {
         if (!dc || dc.resolved) return;
         dc.resolved = true;
         // 按键次数高者胜，平局时随机（种子随机，保证联机确定性）
-        let w = dc.clashValueA > dc.clashValueB ? dc.fa : (dc.clashValueA < dc.clashValueB ? dc.fb : (RNG.chance(0.5) ? dc.fa : dc.fb));
-        let l = w === dc.fa ? dc.fb : dc.fa;
+        const w = dc.clashValueA > dc.clashValueB ? dc.fa : (dc.clashValueA < dc.clashValueB ? dc.fb : (RNG.chance(0.5) ? dc.fa : dc.fb));
+        const l = w === dc.fa ? dc.fb : dc.fa;
         dc.winner = w;
         dc.loser = l;
         w.setState('idle');
@@ -502,7 +502,7 @@ export const Game = {
         // UI反馈渲染——计时器衰减已移入 update()（P2-12）
         if (this.uiFeedback) {
             if (this.uiFeedback.type === 'confirm') {
-                var fa = Math.max(0, 1 - this.uiFeedback.timer / 4);
+                const fa = Math.max(0, 1 - this.uiFeedback.timer / 4);
                 if (fa > 0) {
                     ctx.save();
                     ctx.fillStyle = 'rgba(255,255,255,' + (fa * 0.18).toFixed(3) + ')';
@@ -510,8 +510,8 @@ export const Game = {
                     ctx.restore();
                 }
             } else if (this.uiFeedback.type === 'cancel') {
-                var shakeX = (this.uiFeedback.timer % 2 === 0) ? 3 : -3;
-                var ca = Math.max(0, 1 - this.uiFeedback.timer / 4);
+                const shakeX = (this.uiFeedback.timer % 2 === 0) ? 3 : -3;
+                const ca = Math.max(0, 1 - this.uiFeedback.timer / 4);
                 if (ca > 0) {
                     ctx.save();
                     ctx.fillStyle = 'rgba(255,60,60,' + (ca * 0.12).toFixed(3) + ')';
@@ -1072,6 +1072,7 @@ export const Game = {
             this.sel.p2 = msg.p2;
             Settings.targetWins = (msg.wins === 1 || msg.wins === 2) ? msg.wins : 2;
             Settings.roundTime = [30, 60, 99, 120].includes(msg.roundTime) ? msg.roundTime : 99;
+            persistSettings();   // 联机规则覆盖本地设置后同步落盘（与内存行为一致）
             this.stageId = STAGES[msg.seed % STAGES.length].id;
             this.netSeed = (msg.seed >>> 0);
             this.reset(ROSTER[msg.p1], ROSTER[msg.p2]);

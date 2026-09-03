@@ -8,8 +8,11 @@ export const VW = 1280,
 export const GROUND = 600; // 地面 Y
 export const GRAV = 0.9;
 export const ROUND_TIME = 99;
-export const TARGET_WINS = 2; // BO3
 export const ARCADE_STAGES = 10; // 闯关模式总关卡数
+
+/* 菜单类场景名单：main.js 的菜单输入路由与 game.js 共用此清单，
+   新增菜单场景时只需在此登记（P2-5：原名单散落在 main.js 里重复维护） */
+export const MENU_SCENES = ['title', 'netLobby', 'help', 'select', 'stageSelect', 'result', 'settings', 'arcadeTransition', 'arcadeResult'];
 
 /* 必杀技释放保护参数 */
 export const ULT_CAST_FREEZE = 15; // 释放瞬间全局顿帧，@60fps ≈ 0.25s
@@ -69,7 +72,7 @@ export const CHARS = {
     gojo2: {
         id: 'gojo2',
         base: 'gojo', // 行为逻辑完全复用五条本体，仅外观不同（新宿决战服装）
-        name: '五条悟',
+        name: '五条悟 · 新宿决战',
         nameJp: '五条 悟（新宿决战）',
         title: '新宿决战 · 最强之姿',
         color: '#59c8ff',
@@ -844,7 +847,7 @@ export const DEFAULT_KEYMAP = {
         dodge: ['Numpad3']
     }
 };
-export let KEYMAP = JSON.parse(JSON.stringify(DEFAULT_KEYMAP));
+export const KEYMAP = JSON.parse(JSON.stringify(DEFAULT_KEYMAP));
 export const ACTION_LABELS = {
     left: '左移',
     right: '右移',
@@ -881,8 +884,75 @@ export const Settings = {
     diffIdx: 1,
     rebind: null,
     roundMode: 3,      // 回合制：1=BO1，3=BO3
-    targetWins: 2      // 先赢几局即胜（BO1→1，BO3→2）
+    /* P2-10：targetWins 与 roundMode 表达同一件事，改为派生属性（BO1→1 局，BO3→2 局），
+       两处真相合而为一，不会再漂移。保留 setter 兼容既有写入点。 */
+    get targetWins() { return this.roundMode === 1 ? 1 : 2; },
+    set targetWins(v) { this.roundMode = (v === 1 ? 1 : 3); }
 };
+
+/* ---------------- 设置持久化（localStorage，P2-9） ----------------
+   键位重绑/难度/回合制/时长/音乐此前刷新即丢，价值大打折扣。
+   读取时做白名单校验：被篡改的存档最多被忽略，不会让 KEYMAP/Settings 结构崩掉。 */
+const SETTINGS_STORE_KEY = 'jjk-settings-v1';
+const KEYMAP_STORE_KEY = 'jjk-keymap-v1';
+const _ROUND_TIMES = [30, 60, 99, 120, '∞'];
+const _DIFF_KEYS = ['easy', 'normal', 'hard'];
+
+function _isValidKeyArr(arr) {
+    return Array.isArray(arr) && arr.length > 0 && arr.every(k => typeof k === 'string' && k.length > 0);
+}
+
+function loadPersistedSettings() {
+    let data = null;
+    try {
+        const raw = localStorage.getItem(SETTINGS_STORE_KEY);
+        if (raw) data = JSON.parse(raw);
+    } catch { /* 隐私模式/存储不可用/JSON 损坏：忽略，用默认值 */ }
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+        if (_ROUND_TIMES.includes(data.roundTime)) Settings.roundTime = data.roundTime;
+        if (typeof data.music === 'boolean') Settings.music = data.music;
+        const dOk = _DIFF_KEYS.includes(data.difficulty);
+        const iOk = Number.isInteger(data.diffIdx) && data.diffIdx >= 0 && data.diffIdx < _DIFF_KEYS.length;
+        /* difficulty 与 diffIdx 互为镜像，任一合法即对齐另一个，防止两处不一致 */
+        if (dOk && (!iOk || _DIFF_KEYS[data.diffIdx] !== data.difficulty)) {
+            Settings.difficulty = data.difficulty;
+            Settings.diffIdx = _DIFF_KEYS.indexOf(data.difficulty);
+        } else if (iOk) {
+            Settings.diffIdx = data.diffIdx;
+            Settings.difficulty = _DIFF_KEYS[data.diffIdx];
+        }
+        if (data.roundMode === 1 || data.roundMode === 3) Settings.roundMode = data.roundMode;
+    }
+    try {
+        const raw = localStorage.getItem(KEYMAP_STORE_KEY);
+        if (!raw) return;
+        const km = JSON.parse(raw);
+        if (!km || typeof km !== 'object') return;
+        for (const side of ['p1', 'p2']) {
+            const src = km[side];
+            if (!src || typeof src !== 'object') continue;
+            for (const act of ACTION_ORDER) {
+                if (_isValidKeyArr(src[act])) KEYMAP[side][act] = [...src[act]];
+            }
+        }
+    } catch { /* 同上 */ }
+}
+
+/* 在设置发生变化后调用（game.js 设置面板 / input.js 重绑捕获 / 联机规则下发） */
+export function persistSettings() {
+    try {
+        localStorage.setItem(SETTINGS_STORE_KEY, JSON.stringify({
+            roundTime: Settings.roundTime,
+            difficulty: Settings.difficulty,
+            diffIdx: Settings.diffIdx,
+            music: Settings.music,
+            roundMode: Settings.roundMode
+        }));
+        localStorage.setItem(KEYMAP_STORE_KEY, JSON.stringify(KEYMAP));
+    } catch { /* 存储不可用时静默跳过（游戏内设置仍在本会话生效） */ }
+}
+
+loadPersistedSettings();
 
 /* ---------------- 主题颜色 Token 与通用参数 ---------------- */
 export const THEME = {

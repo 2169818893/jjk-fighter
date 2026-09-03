@@ -3,13 +3,13 @@
    原理：双方每逻辑帧交换"动作位掩码"，本地输入延迟 DELAY 帧生效，
         两端在同一帧号上注入完全相同的双方输入 → 确定性模拟保持一致
    ===================================================================== */
-import { KEYMAP, Settings } from './config.js';
+import { KEYMAP, ROSTER, Settings } from './config.js';
 import { RNG } from './utils.js';
 
 /* 动作位序（与 KEYMAP 的动作名一一对应，两端必须一致） */
 const ACTIONS = ['left', 'right', 'jump', 'block', 'light', 'heavy', 'skill1', 'skill2', 'skill3', 'ult', 'dodge'];
 const SIDE_KEYS = ['p1', 'p2'];   // KEYMAP 以 p1/p2 为键
-const PROTO_VER = 1;              // 与 server/net-server.mjs 的 PROTO_VER 保持一致
+const PROTO_VER = 2;              // 与 server/net-server.mjs 的 PROTO_VER 保持一致（v2：+rh 角色表指纹）
 const MASK_MAX = 0x7FF;           // 11 位动作掩码上界
 const BUF_WINDOW = 1024;          // 输入缓存滑动窗口：帧号落后超过该值即清理
 const BUF_CAP = 2048;             // 输入缓存总量上限（防止恶意对端刷爆内存）
@@ -37,6 +37,19 @@ function stateHash(a, b) {
     return h >>> 0;
 }
 
+/* P2-12：角色表指纹（FNV-1a uint32）。选人阶段随 pick 上报，服务端比对两端
+   指纹，不一致即拒绝开局——防止角色表不同的客户端版本之间静默错位 */
+function rosterHash() {
+    let h = 2166136261 >>> 0;
+    for (const id of ROSTER) {
+        for (let i = 0; i < id.length; i++) {
+            h = Math.imul(h ^ id.charCodeAt(i), 16777619) >>> 0;
+        }
+        h = Math.imul(h ^ 0x1F, 16777619) >>> 0;   // 条目分隔符
+    }
+    return h >>> 0;
+}
+
 export const Net = {
     active: false,
     ws: null,
@@ -44,7 +57,7 @@ export const Net = {
     status: 'off',         // off|connecting|lobby|waiting|hosting|paired|picked|playing|error
     errMsg: '',
     failMsg: '',           // 加入房间失败提示（大厅内展示，不算致命错误）
-    roomCode: '',          // 创建房间后服务器分配的 4 位房号
+    roomCode: '',          // 创建房间后服务器分配的 6 位房号
     rematchLocal: false,   // 本方已请求再战
     rematchPeer: false,    // 对方已请求再战
     rtt: null,             // 最近一次 ping 往返延迟（ms）
@@ -103,7 +116,7 @@ export const Net = {
         this.status = 'connecting';
         try {
             this.ws = new WebSocket(this.wsUrl());
-        } catch (e) {
+        } catch {
             this.status = 'error'; this.errMsg = '无法创建连接';
             return;
         }
@@ -128,7 +141,7 @@ export const Net = {
     disconnect() {
         this.active = false;
         this.stopPing();
-        if (this.ws) { try { this.ws.close(); } catch (e) {} this.ws = null; }
+        if (this.ws) { try { this.ws.close(); } catch { /* 连接可能已断开 */ } this.ws = null; }
         this.resetSession();
         this.status = 'off';
     },
@@ -257,7 +270,7 @@ export const Net = {
         this.status = 'error';
         this.errMsg = msg;
         if (this.onEvent) this.onEvent('closed');
-        if (this.ws) { try { this.ws.close(); } catch (e) {} }
+        if (this.ws) { try { this.ws.close(); } catch { /* 连接可能已断开 */ } }
     },
 
     /* ---- 角色选择阶段 ---- */
@@ -270,7 +283,8 @@ export const Net = {
         if (!Number.isSafeInteger(c) || c < 0) return;
         this.picked = true;
         this.status = 'picked';
-        /* 规范化后发送：wins 仅 1/2；roundTime 仅 30/60/99/120（'∞' 视为 99） */
+        /* 规范化后发送：wins 仅 1/2；roundTime 仅 30/60/99/120（'∞' 视为 99）；
+           rh = 角色表指纹，服务端校验两端一致（P2-12） */
         const wins = Settings.targetWins === 1 ? 1 : 2;
         const roundTime = Settings.roundTime === '∞' ? 99
             : ([30, 60, 99, 120].includes(Settings.roundTime) ? Settings.roundTime : 99);
@@ -278,7 +292,7 @@ export const Net = {
             t: 'pick', c,
             wins,
             roundTime,
-            rtt: 0 // 延迟由服务端按 ping/pong 实测，客户端上报值不再参与计算
+            rh: rosterHash()
         });
     },
 

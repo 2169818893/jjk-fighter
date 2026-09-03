@@ -2,7 +2,7 @@
 name = "jjk-fighter"
 version = "1.0.0"
 description = "咒术回战 呪術激闘"
-authors = ["you"]
+authors = ["FengXin"]
 edition = "2021"
 build = "build.rs"
 

@@ -80,11 +80,16 @@ export function gameInterval(fn, ms){
 }
 export function clearGameInterval(id){ _frameTimers.delete(id); }
 export function clearAllGameIntervals(){ _frameTimers.clear(); }
+/* P2-4：场景来源改为依赖注入（main.js 调 setSceneProvider），模块不再依赖裸全局 Game，
+   可被独立 import / 单元测试。未注入时回退 window.Game 兜底，保持旧行为。 */
+let _sceneProvider = null;
+export function setSceneProvider(fn){ _sceneProvider = fn; }
 export function tickGameIntervals(){
   /* P1-7：原为黑名单（只排 pause/select/title），result/settings/help/stageSelect/
      netLobby/arcadeTransition/versus 全部漏网——回合结束后的结算界面仍会掉血，
      versus 入场动画期间也在推进。技能多段结算只可能发生在 fight，故改白名单。 */
-  if(typeof Game!=='undefined' && Game.scene!=='fight') return;
+  const scene = _sceneProvider ? _sceneProvider() : (typeof window.Game !== 'undefined' ? window.Game.scene : null);
+  if (scene !== 'fight') return;
   for(const t of [..._frameTimers.values()]){
     t.cnt++;
     if(t.cnt >= t.every){ t.cnt = 0; t.fn(); }
