@@ -22,12 +22,12 @@ function noiseBuffer(ctx, len, cache){
   return buf;
 }
 /* P2-4：节点用完即断链。Chrome 会自动回收，Safari/旧版有已知回收延迟 */
-function autoRelease(src, nodes){ src.onended = ()=>{ try{ src.disconnect(); for(const n of nodes) n.disconnect(); }catch(e){} }; }
+function autoRelease(src, nodes){ src.onended = ()=>{ try{ src.disconnect(); for(const n of nodes) n.disconnect(); }catch{ /* 节点可能已断开 */ } }; }
 
 export const AudioSys = {
   ctx:null, enabled:true,
   _noiseCache:new Map(),   // 长度 -> AudioBuffer（噪声波形缓存，见 noiseBuffer）
-  init(){ if(!this.ctx){ try{ this.ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ this.enabled=false; }
+  init(){ if(!this.ctx){ try{ this.ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch{ this.enabled=false; }
     if(this.ctx) this._noiseCache = new Map(); }   // 换 ctx 时缓存作废（采样率可能不同）
     if(this.ctx && this.ctx.state==='suspended') this.ctx.resume();
     if(this.ctx && !BGM.ctx) BGM.init(this.ctx); },
@@ -303,7 +303,7 @@ export const BGM = {
   stop(){
     this.playing=false;
     if(this.timer){ clearInterval(this.timer); this.timer=null; }
-    if(this.fileSource){ try{ this.fileSource.stop(); }catch(e){} this.fileSource=null; }
+    if(this.fileSource){ try{ this.fileSource.stop(); }catch{ /* 源可能已停止 */ } this.fileSource=null; }
   },
   setEnabled(on){
     this.enabled=on;

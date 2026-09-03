@@ -1,7 +1,7 @@
 /* =====================================================================
    飞行道具 / 式神投射物视觉渲染
    ===================================================================== */
-import { g_ellipse, g_line, rand } from '../utils.js';
+import { g_ellipse } from '../utils.js';
 
 export function drawProjectile(ctx, p, t) {
     ctx.save();

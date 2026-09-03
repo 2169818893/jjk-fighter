@@ -5,14 +5,7 @@
 import { lerp, clamp, rand } from '../utils.js';
 
 /* ---------------- 向量/角度辅助 ---------------- */
-const toRad = d => d * Math.PI / 180;
-const len2 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-
-/* 把角度归到 [-PI,PI]，用于关节弯曲 */
-function angleTo(p1, p2) { return Math.atan2(p2.y - p1.y, p2.x - p1.x); }
-
-/* 二次贝塞尔曲线插值，让肢体更有弹性 */
-function qLerp(a, b, t) { return a + (b - a) * (2 - t) * t; } // ease-like
+/* （toRad/len2/angleTo/qLerp 已无引用，移除；如需恢复见 git 历史） */
 
 /* ---------------- 姿势计算 ---------------- */
 function computePose(f) {
@@ -90,7 +83,7 @@ function computePose(f) {
         pose.headRot = -0.03 + Math.sin(t * 0.05) * 0.03;
         pose.bodyRot = Math.sin(t * 0.045) * 0.015;
     }
-    
+
     // 宿傩：待机时抱臂昂首的睥睨姿态（诅咒之王的威压）
     if (f.c.id === 'sukuna' && f.state === 'idle' && f.onGround && !f.blockHeld) {
         pose.armL.elbow = { x: -24, y: -86 };
@@ -860,7 +853,7 @@ function computePose(f) {
         pose.auraBoost = 0; // 改用胎藏曼荼罗光轮
         pose.kenUlt = peak;
     }
-    
+
     // 花御必杀：朵颐光海——双臂如巨树伸枝般缓缓张开，仰面向天沉入花田
     if (f.state === 'ult' && f.c.id === 'hanami') {
         pose.bodyY -= peak * 6;
@@ -1618,7 +1611,6 @@ function drawRika(g, x, y, facing, alpha, mode, animT) {
     const at = animT || 0;
     const breathe = Math.sin(at * 0.08) * 3;
     // 里香配色：惨白骨感上身 + 黑色涌流下躯 + 猩红血口 + 紫咒力边缘（贴合原作过咒怨灵）
-    const bodyFill = 'rgba(30,20,52,0.55)';
     const boneFill = 'rgba(226,222,230,0.74)';
     const boneShade = 'rgba(150,140,168,0.5)';
     const bodyEdge = 'rgba(184,154,255,0.65)';
@@ -2405,7 +2397,6 @@ function drawHead(g, c, x, y, pose) {
     } else if (id === 'megumi' || id === 'megumi2') {
         // 伏黑惠：双层黑刺发（内层蓝灰阴影 + 外层长短交错乱刺），前后期同款（参考立绘）
         const at = pose.animT || 0;
-        const v2 = id === 'megumi2';
         // 内层发丝阴影
         g.fillStyle = c.hairShade || '#2a3244';
         g.beginPath();
@@ -3161,8 +3152,6 @@ function drawHead(g, c, x, y, pose) {
         g.stroke();
     } else if (id === 'hanami') {
         // 面具咒灵：上半脸面具覆盖 + 双弯角 + 暴露嘴部獠牙 + 眼下黑色纹路（与选人界面一致）
-        const at = pose.animT || 0;
-        const sway = Math.sin(at * 0.05) * 1.2;
         const skin = c.skin || '#c8c8c0';
         // 下半脸（皮肤外露）
         g.fillStyle = skin;

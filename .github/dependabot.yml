@@ -1,0 +1,20 @@
+version: 2
+updates:
+  # 服务端依赖（联机 WebSocket 服务器）
+  - package-ecosystem: "npm"
+    directory: "/public/server"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # 根目录开发工具（ESLint 等）
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # GitHub Actions 版本
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

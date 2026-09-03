@@ -5,10 +5,18 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   server-test:
     name: Server tests (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -34,9 +42,31 @@ jobs:
       - name: Run protocol tests
         run: npm test
 
+  frontend-check:
+    name: Frontend lint & syntax check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check (all public/js)
+        run: npm run check
+
+      - name: Lint
+        run: npm run lint
+
   tauri-build:
     name: Tauri desktop build check (Windows)
     runs-on: windows-latest
+    timeout-minutes: 40
     defaults:
       run:
         working-directory: src-tauri

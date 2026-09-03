@@ -26,5 +26,5 @@ export class Projectile {
       }
     }
   }
-  draw(g){}
+  draw(_g){}
 }

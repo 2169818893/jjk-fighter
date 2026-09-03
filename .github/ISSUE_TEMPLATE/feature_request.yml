@@ -1,0 +1,29 @@
+name: 功能建议
+description: 提出新角色、玩法或改进建议
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: 建议类型
+      options:
+        - 新角色 / 数值调整
+        - 玩法与模式
+        - 操作手感 / 键位
+        - 联机体验
+        - 界面与演出
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: 建议
+      description: 描述你期望的效果，越具体越好
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: 动机
+      description: 这个建议能解决什么问题或带来什么体验提升？

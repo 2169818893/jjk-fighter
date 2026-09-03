@@ -1,0 +1,50 @@
+name: 缺陷报告
+description: 报告游戏或联机服务器的问题
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！提交前请先搜索现有 Issue，避免重复。
+        **安全漏洞请勿在此公开报告**，请使用 Security 标签页的私密漏洞报告，参见 [SECURITY.md](https://github.com/2169818893/jjk-fighter/blob/main/SECURITY.md)。
+  - type: dropdown
+    id: area
+    attributes:
+      label: 问题区域
+      options:
+        - 前端游戏（单机 / 画面 / 操作）
+        - 联机对战（客户端）
+        - 联机服务器（net-server）
+        - 桌面端（Tauri 打包）
+        - 文档 / 其他
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 发生了什么？
+      description: 请描述预期行为与实际行为
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 打开游戏…
+        2. 点击…
+        3. 出现…
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: 运行环境
+      description: 操作系统、浏览器（或 Node / Tauri 版本）；联机问题请注明是否为公网部署
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 控制台日志 / 截图
+      description: 浏览器 DevTools 报错、服务器日志或截图（注意隐去敏感信息）

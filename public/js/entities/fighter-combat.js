@@ -4,7 +4,7 @@
 import { Fighter } from './fighter-core.js';
 import { Projectile } from './projectile.js';
 // 视觉版本号：避免浏览器继续复用旧的魔虚罗模块缓存
-import { Mahoraga } from './mahoraga.js?v=ai-duel-20260810';
+import { Mahoraga } from './mahoraga.js';
 import { Agito } from './agito.js';
 import { TransfiguredHuman } from './transfigured-human.js';
 import { VW, GROUND, hasDomainUlt, BLACK_FLASH, KEYMAP } from '../config.js';
@@ -175,7 +175,7 @@ Fighter.prototype.skillFrame = function(game) {
                         scale: 1.35,
                         aoHover: true,
                         consume: false,
-                        update2(game2) {
+                        update2(_game2) {
                             /* 升空减速 → 高空定点悬停 */
                             if (!this.hovering) {
                                 this.vy *= 0.94;
@@ -219,7 +219,7 @@ Fighter.prototype.skillFrame = function(game) {
                     color: '#7fd4ff',
                     type: 'ao',
                     scale: 1 + 0.45 * chP,
-                    update2(game2) {
+                    update2(_game2) {
                         /* 负无穷引力场：持续吸拽范围内的对手与咒力粒子 */
                         gatherFX(this.x, this.y, '#9fe0ff', 2, 110, 12);
                         const tg2 = this.owner.foe;
@@ -472,7 +472,7 @@ Fighter.prototype.skillFrame = function(game) {
                     type: 'nue',
                     anim: 0,
                     tx: tx,
-                    update2(game2) {
+                    update2(_game2) {
                         if (this.y < GROUND - 60) {
                             this.vy += 0.35;
                             this.vx = Math.sign(this.tx - this.x) * 6;
@@ -2759,7 +2759,7 @@ Fighter.prototype.skillFrame = function(game) {
 
 /* 前期伏黑惠必杀专用连放：召唤魔虚罗后依次释放 skill1 → skill2 → skill3。
    这是独立时间轴，不调用 startSkill，所以不会触碰普通技能 CD。 */
-Fighter.prototype.startMegumiUltSequence = function(game) {
+Fighter.prototype.startMegumiUltSequence = function(_game) {
     this.ultSequenceActive = true;
     this.ultSequenceFrame = (game2) => {
         const local = this.st - this.ultSequenceStart;
@@ -2815,8 +2815,7 @@ function domainHit(game, attacker, primary, opt) {
 }
 
 Fighter.prototype.ultEffect = function(game) {
-    const id = this.c.base || this.c.id,
-        tg = this.foe;
+    const tg = this.foe;
     // 只有真正拥有领域展开必杀的角色才能参与领域对冲（domain>0 且 ult 为领域展开）
     const hasDomain = hasDomainUlt(this.c);
     if (hasDomain && tg && !tg.dead && tg.state === 'ult' && hasDomainUlt(tg.c) && !game.domainClash) {

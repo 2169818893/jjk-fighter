@@ -28,7 +28,7 @@ export class TransfiguredHuman {
     hittable() { return !this.dead; }
     takeHit(foe, opt) {
         if (this.dead) return;
-        let dmg = opt.dmg || 10;
+        const dmg = opt.dmg || 10;
         this.hp -= dmg;
         this.flashT = 6;
         FX.spark(this.x, this.cy, '#d8a8c8');

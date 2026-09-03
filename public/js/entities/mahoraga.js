@@ -32,7 +32,7 @@ export class Mahoraga {
     if(this.dead) return;
     // 法轮适应：每层减少受到的伤害
     const red = Math.min(this.maxReduction, this.adapt*this.adaptReduction);
-    let dmg=opt.dmg*(1-red);
+    const dmg=opt.dmg*(1-red);
     this.hp-=dmg; this.flashT=6; this.adapt++;
     FX.spark(this.x,this.cy,'#e8e4ff');
     FX.text(this.x,this.cy-80,Math.round(dmg),'#e8e4ff',22);

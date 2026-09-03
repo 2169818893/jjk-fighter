@@ -1,11 +1,11 @@
 /* =====================================================================
    战斗场景渲染：背景、角色、特效、HUD、CUT-IN、领域对抗
    ===================================================================== */
-import { VW, VH, GROUND, hasDomainUlt } from '../config.js';
-import { roundRect, easeOut, rand, lerp } from '../utils.js';
+import { VW, VH, hasDomainUlt } from '../config.js';
+import { roundRect, easeOut, rand } from '../utils.js';
 import { FX } from '../fx.js';
 import { BG, drawDomain } from './background.js';
-import { HUD } from './hud.js?v=ai-duel-20260810';
+import { HUD } from './hud.js';
 import { drawProjectile } from './projectile.js';
 import { drawPortrait } from './portrait.js';
 
@@ -129,7 +129,7 @@ export const FightRenderer = {
         ctx.restore();
     },
 
-    drawDomainClash(game, ctx, t) {
+    drawDomainClash(game, ctx, _t) {
         const dc = game.domainClash,
             ct = dc.t;
         // 防御性校验：仅当双方都具备领域展开能力时才绘制领域对冲界面

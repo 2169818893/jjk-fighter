@@ -1921,7 +1921,6 @@ export function drawPortrait(g, c, t) {
         }
     } else if (c.id === 'megumi' || c.id === 'megumi2') {
         // 伏黑惠：双层黑刺发 + 斜刘海；觉醒版长刘海遮右眼 + 影光瞳
-        const v2 = c.id === 'megumi2';
         // 内层发丝阴影
         g.fillStyle = c.hairShade || '#2a3244';
         g.beginPath();
@@ -3209,7 +3208,9 @@ export function drawPortrait(g, c, t) {
         }
     }
     // 眼睛（伏黑两版本已在头部分支自绘）
-    if (c.id === 'gojo' || c.id === 'gojo2' || c.id === 'megumi' || c.id === 'megumi2') {} else if (c.id === 'hanami') {
+    if (c.id === 'gojo' || c.id === 'gojo2' || c.id === 'megumi' || c.id === 'megumi2') {
+        /* 五条/伏黑系列的眼睛已在各自头部分支内自绘，此处跳过 */
+    } else if (c.id === 'hanami') {
         // 面具覆盖上半脸，无眼睛
     } else if (c.id === 'jogo') {
         // 眼缝已在头部绘制，此处跳过

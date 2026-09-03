@@ -2,7 +2,7 @@
    Fighter 核心：构造、状态、移动、受击、普通攻击、技能入口、闪避、更新
    ===================================================================== */
 import { CHARS, derive, GROUND, GRAV, VW, ULT_CAST_FREEZE, KEYMAP, hasDomainUlt, BLACK_FLASH } from '../config.js';
-import { clamp, irand, lerp, rand, RNG } from '../utils.js';
+import { clamp, rand, RNG } from '../utils.js';
 import { Input } from '../input.js';
 import { AudioSys } from '../audio.js';
 import { FX } from '../fx.js';

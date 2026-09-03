@@ -28,3 +28,7 @@ $RECYCLE.BIN/
 .idea/
 *.swp
 *.swo
+
+# ---- 其他 ----
+# NVIDIA 驱动在本目录生成的运行日志（与项目无关）
+NVIDIA Corporation/
